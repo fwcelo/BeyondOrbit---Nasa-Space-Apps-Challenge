@@ -66,4 +66,4 @@ We would like to acknowledge:
 
 ---
 
-\<p align="center"\> \<strong\>BEYOND ORBIT\</strong\> \<br/\> \<em\>Because abandoned doesn't mean forgotten.\</em\> \<br/\>\<br/\> Developed with curiosity, research, and a passion for space exploration. \</p\>
+BEYOND ORBIT! Because abandoned doesn't mean forgotten. Developed with curiosity, research, and a passion for space exploration. 
