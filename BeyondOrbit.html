@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beyond Orbit</title>
+<style>
+:root{--bg:#04060c;--fg:#9ff0b5;--acc:#ffd166;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root.mars{--fg:#ffb08a;--acc:#ff6b3d}
+:root.moon{--fg:#ececec;--acc:#ffffff}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace}
+#spacer{width:1px}
+#cv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.panel{position:fixed;left:0;right:0;opacity:0;pointer-events:none;transition:opacity .2s}
+.panel.on{pointer-events:auto}
+#pick{top:0;bottom:0}
+.hit{position:fixed;background:transparent;border:0;cursor:pointer;padding:0;color:transparent}
+.hit:focus-visible{outline:1px dashed var(--acc)}
+#final{top:calc(env(safe-area-inset-top,0px) + 40px);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:1.6vh 4vw;padding:8px 0 18px;background:linear-gradient(var(--bg) 78%,transparent);text-align:center}
+.hd{width:100%;color:var(--acc);font-size:clamp(11px,3vw,14px);letter-spacing:.15em;animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:.35}}
+.opt{background:none;color:var(--fg);font:inherit;cursor:pointer;font-size:clamp(11px,3vw,15px);border:1px dashed var(--fg);padding:8px 14px;margin:2px;transition:transform .15s}
+.opt:hover,.opt:focus-visible{color:var(--acc);text-shadow:0 0 10px var(--acc);outline:none;transform:scale(1.07)}
+#msg{width:100%;color:var(--acc);min-height:1.3em;font-size:clamp(11px,3vw,14px)}
+#fact{width:100%;box-sizing:border-box;padding:0 6vw;font-size:clamp(11px,2.7vw,14px);min-height:2.6em}
+#cv{z-index:1}
+.panel{z-index:7}
+body::before{content:"";position:fixed;inset:0;z-index:5;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
+body::after{content:"";position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.7));animation:fl 5s ease-in-out infinite}
+@keyframes fl{50%{opacity:.9}}
+.opt{background:rgba(4,6,12,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 0 16px -5px var(--fg),inset 0 0 12px -8px var(--fg)}
+.hd{text-shadow:0 0 12px var(--acc)}
+@media(prefers-reduced-motion:reduce){body::after{animation:none}}
+#info{position:fixed;display:none;top:64px;left:10px;width:min(300px,46vw);box-sizing:border-box;padding:14px 18px;background:rgba(4,6,12,.9);border:1px solid var(--acc);box-shadow:0 0 24px -6px var(--acc);text-align:center;font-size:clamp(11px,2.8vw,14px);z-index:9}
+#info.on{display:block}
+#it{color:var(--acc);letter-spacing:.08em;margin-bottom:8px}
+#ib{line-height:1.55;margin-bottom:10px}
+.hit{z-index:8}
+#ist{font-weight:700;letter-spacing:.2em;margin-bottom:8px}
+#ist.act{color:#39ff14;text-shadow:0 0 6px #39ff14,0 0 16px #39ff14}
+#ist.ina{color:#ff2a2a;text-shadow:0 0 6px #ff2a2a,0 0 16px #ff2a2a}
+#itm{color:var(--acc);font-size:.9em;margin-bottom:8px;line-height:1.4}
+#im{display:none;line-height:1.55;margin-bottom:10px;text-align:left;opacity:.92}
+#info{max-height:calc(100vh - 150px);overflow:auto}
+#cta{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);transform:translateX(-50%);z-index:7;pointer-events:none;text-align:center;white-space:nowrap;color:var(--acc);font-size:clamp(11px,3.1vw,15px);letter-spacing:.26em;padding:10px 22px 8px;background:rgba(4,6,12,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);border:1px solid var(--acc);box-shadow:0 0 22px -8px var(--acc),inset 0 0 14px -10px var(--acc);text-shadow:0 0 10px rgba(255,209,102,.35);transition:opacity .4s}
+#cta i{display:block;width:7px;height:7px;margin:8px auto 2px;border:solid var(--acc);border-width:0 1px 1px 0;transform:rotate(45deg);animation:dn 2.6s ease-in-out infinite}
+@keyframes dn{0%,100%{opacity:.25;transform:translateY(0) rotate(45deg)}50%{opacity:1;transform:translateY(4px) rotate(45deg)}}
+#nh{position:fixed;left:50%;transform:translate(-50%,-50%);z-index:7;pointer-events:none;white-space:nowrap;display:flex;align-items:center;gap:10px;color:var(--acc);font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace;font-weight:400;font-size:clamp(13px,3.5vw,20px);letter-spacing:.15em;text-shadow:0 0 4px #000,0 0 9px rgba(0,0,0,.95),0 1px 2px #000,0 0 18px color-mix(in srgb,var(--acc) 50%,transparent);transition:opacity .2s;opacity:0}
+#nh::before,#nh::after{content:"";width:clamp(14px,4vw,56px);height:1px;background:linear-gradient(90deg,transparent,var(--acc));box-shadow:0 0 6px color-mix(in srgb,var(--acc) 60%,transparent)}
+#nh::after{transform:scaleX(-1)}
+@media(prefers-reduced-motion:reduce){#cta i{animation:none}}
+#nt{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 42px);right:8px;z-index:10;margin:0;padding:6px 10px;font-size:clamp(10px,2.6vw,13px)}
+#nt.off{animation:bl 1s steps(2) infinite}
+@media(prefers-reduced-motion:reduce){#nt.off{animation:none}}
+</style>
+</head>
+<body>
+<div id="spacer"></div>
+<canvas id="cv"></canvas>
+<div class="sr" id="sr"></div>
+<div class="panel" id="pick"><button class="hit" data-go="moon" id="bm" aria-label="Travel to the Moon"></button><button class="hit" data-go="mars" id="bj" aria-label="Travel to Mars"></button></div>
+<div class="panel" id="final"><div class="hd">&gt;&gt; YOUR CHOICE &lt;&lt;</div><div id="fact"></div><div id="msg"></div>
+<button class="opt" id="confirm"></button><button class="opt" id="other"></button><button class="opt" data-go="launch">[ BACK TO EARTH ]</button></div>
+<div id="cta">SCROLL DOWN TO LAUNCH<i></i></div>
+<div id="nh">NASA HACKATHON PROJECT</div>
+<button class="opt off" id="nt" aria-pressed="false">[ VOICE: OFF ]</button>
+<div id="info"><div id="it"></div><div id="ist"></div><div id="ib"></div><div id="itm"></div><div id="im"></div><button class="opt" id="irm"></button><button class="opt" id="ianim"></button><button class="opt" id="iclose">[ CLOSE ]</button></div>
+<script>
+const $=s=>document.querySelector(s),cv=$('#cv'),ctx=cv.getContext('2d'),spacer=$('#spacer'),pick=$('#pick'),fin=$('#final');
+const E='     ',K=2,RH=9*K;
+const F={B:["####.","#...#","####.","#...#","####."],E:["#####","#....","###..","#....","#####"],Y:["#...#",".#.#.","..#..","..#..","..#.."],O:[".###.","#...#","#...#","#...#",".###."],N:["#...#","##..#","#.#.#","#..##","#...#"],D:["####.","#...#","#...#","#...#","####."],R:["####.","#...#","####.","#..#.","#...#"],I:["#####","..#..","..#..","..#..","#####"],T:["#####","..#..","..#..","..#..","..#.."],M:["#...#","##.##","#.#.#","#...#","#...#"],A:[".###.","#...#","#####","#...#","#...#"],S:[".####","#....",".###.","....#","####."],' ':[E,E,E,E,E]};
+const big=w=>{const r=['','','','',''];for(const c of w){const g=F[c]||F[' '];for(let i=0;i<5;i++)r[i]+=g[i].replace(/\./g,' ')+' '}return r};
+const ROCKET=["   n   ","  nnn  ","  WWs  ","  WbW  ","  WWs  ","  WWs  "," RWWsR ","  kkk  "," koook "],BOOST=[" WWW ","RWWWR","RWWWR","R g R"],ISS=["B W B","BBWBB","B W B"],
+S3=["    s    ","  yyyyy  ","  yyyyy  ","   WWW   ","   WdW   ","  W W W  "," W  W  W ","W   W   W"],
+LM=["   WWWWW   ","  yyyyyyy  "," yyyyyyyyy "," yoyyyyyoy "," yyyyyyyyy ","  yyyyyyy  "," W   o   W ","W    o    W","gg   o   gg"],
+AL=["   ggggg   ","    ggg    ","     W     ","     W     ","ddd WWW sss","ddd WdW sss"],
+RV=["     ggg     ","      g   d  ","  WWWWWWWWW  "," WWdWWWWWdWW ","  WWWWWWWWW  "," ggg     ggg "," ggg     ggg "],
+LR=["         ggg ","          g  ","ssssss WWW   ","ssssssyWWWy  ","ssssss WWW   "],PM={W:13,s:36,y:5,d:37,o:38,g:10,b:8},ASC=[" WWWWW "," WbWbW "," WWWWW ","  yyy  "];
+const CAP=['SCOOPING LUNAR SOIL','ASCENT STAGE LIFTOFF','TRANSMITTING DATA TO EARTH','ROVER ON THE MOVE','LASER-MAPPING THE SURFACE'],
+PR=[{a:S3,n:'SURVEYOR 3',y:'1967',t:'Unmanned NASA lander that soft-landed on April 20, 1967. Its scoop dug trenches to test the soil and its TV camera sent back thousands of photos. Apollo 12 astronauts walked over to it in 1969.'},
+{a:LM,n:'APOLLO LUNAR MODULE',y:'1969',t:'The two-stage craft that carried astronauts to the surface. Only the descent stage stays behind: the ascent stage uses it as a launch pad to lift the crew back to orbit.'},
+{a:AL,n:'ALSEP',y:'1969',t:'Apollo Lunar Surface Experiments Package: a science station left by the crews, with a seismometer, magnetometer and more. Nuclear powered, it sent data to Earth until 1977.'},
+{a:RV,n:'LUNAR ROVING VEHICLE',y:'1971',t:'The electric moon buggy of Apollo 15, 16 and 17. It let astronauts drive kilometers from the lander carrying tools and samples, at up to about 13 km/h.'},
+{a:LR,n:'LUNAR RECONNAISSANCE ORBITER',y:'2009',hv:30,t:'A NASA probe launched in 2009 that orbits the Moon. It maps the surface in fine detail, scouts landing sites and has even photographed the Apollo hardware left on the ground.'}];
+const EX=[
+{d:'APR 20, 1967',tm:'NASA Jet Propulsion Laboratory (program management); Hughes Aircraft Company (spacecraft builder).',m:'Launched on April 17, 1967 on an Atlas-Centaur rocket. It bounced twice on touchdown inside a crater. Its soil scoop and camera returned thousands of images before the lunar night ended its operations. In November 1969, Apollo 12 astronauts Pete Conrad and Alan Bean walked to it and brought pieces of it back to Earth for study.'},
+{d:'JUL 20, 1969',tm:'Grumman Aircraft Engineering (builder); NASA Manned Spacecraft Center. Apollo 11 crew: Neil Armstrong, Buzz Aldrin and Michael Collins.',m:'The Eagle landed at Tranquility Base on July 20, 1969. Armstrong and Aldrin walked on the surface while Collins stayed in orbit in the command module. The descent stage was left on the surface as the launch pad. The ascent stage was discarded in lunar orbit after the crew rejoined Collins.'},
+{d:'NOV 19, 1969',tm:'NASA; Bendix Aerospace Systems (prime contractor). Apollo 12 crew: Pete Conrad and Alan Bean.',m:'Apollo 12 deployed the first full ALSEP at the Ocean of Storms, powered by a plutonium SNAP-27 generator. Apollo 11 had left a simpler package in July 1969. The stations ran for years until NASA switched them off on September 30, 1977 to save money.'},
+{d:'JUL 31, 1971',tm:'Boeing, with General Motors Delco (builders); NASA Marshall Space Flight Center (management). Apollo 15 crew: David Scott and James Irwin.',m:'Apollo 15 made the first drive of a rover on the Moon. Three rovers were left behind, one on each of the last three Apollo missions. They folded up to fit inside the lunar module. On Apollo 17, Gene Cernan set an unofficial speed record of about 18 km/h.'},
+{d:'JUN 18, 2009',tm:'NASA Goddard Space Flight Center (mission management); launched together with the LCROSS impactor.',m:'LRO launched on June 18, 2009 on an Atlas V. Unlike the other items it is not abandoned: it is still working in lunar orbit. Its cameras have imaged the Apollo landing sites, showing the descent stages and the paths left by astronaut boots.'}];
+const PFS=["   s   ","  sWs  "," sWWWs ","sWWbWWs"],SJ=["  sss  ","WWWWWWW","gg   gg"];
+const PRM=[
+{a:S3,n:'VIKING 1',y:'1976',v:'mars',j:0,d:'JUL 20, 1976',t:'The first American spacecraft to operate successfully on Mars. It photographed the surface and tested the soil for signs of life.',tm:'NASA Langley Research Center (management); Martin Marietta (lander); NASA Jet Propulsion Laboratory (orbiter).',m:'Viking 1 landed at Chryse Planitia on July 20, 1976 and worked for over six years. Contact was lost on November 11, 1982 after a faulty command. NASA renamed it the Thomas Mutch Memorial Station. Its biology experiments gave results that scientists still debate.'},
+{a:S3,n:'VIKING 2',y:'1976',v:'mars',j:1,d:'SEP 3, 1976',t:'Twin of Viking 1, landed far to the north at Utopia Planitia. It saw frost form on the red soil.',tm:'NASA Langley Research Center (management); Martin Marietta (lander); NASA Jet Propulsion Laboratory (orbiter).',m:'Viking 2 landed on September 3, 1976 and returned color photos, weather data and soil tests until April 11, 1980. Its camera captured winter frost on the ground, a first for Mars.'},
+{a:PFS,n:'MARS PATHFINDER',y:'1997',v:'mars',j:2,d:'JUL 4, 1997',t:'A lander that bounced to a stop on airbags at Ares Vallis, carrying the first wheeled rover to Mars.',tm:'NASA Jet Propulsion Laboratory; project manager Tony Spear.',m:'Pathfinder landed on July 4, 1997 and was renamed the Carl Sagan Memorial Station. The mission was planned for about a week but lasted nearly three months. The last transmission came on September 27, 1997.'},
+{a:SJ,n:'SOJOURNER ROVER',y:'1997',v:'mars',j:3,d:'JUL 6, 1997',t:'The first wheeled vehicle to drive on another planet. It was about the size of a microwave oven.',tm:'NASA Jet Propulsion Laboratory, Mars Pathfinder team.',m:'Sojourner rolled down a ramp onto the surface on July 6, 1997. It was designed for a week but kept working for about 83 sols. It analyzed rocks with an alpha proton X-ray spectrometer and drove roughly 100 meters in total.'},
+{a:LR,n:'MARS ODYSSEY',y:'2001',hv:30,v:'mars',j:4,d:'OCT 24, 2001',t:'An orbiter that maps minerals and ice on Mars and relays messages from the rovers to Earth.',tm:'NASA Jet Propulsion Laboratory (management); Lockheed Martin Astronautics (spacecraft builder).',m:'Odyssey entered Mars orbit on October 24, 2001. In 2002 its instruments found signs of large amounts of water ice just below the surface. It has served for more than two decades as a communications relay for the landers and rovers.'},
+{a:RV,n:'SPIRIT ROVER',y:'2004',v:'mars',j:5,d:'JAN 4, 2004',t:'A golf cart sized rover sent to Gusev Crater to look for signs of past water.',tm:'NASA Jet Propulsion Laboratory; principal investigator Steve Squyres of Cornell University.',m:'Spirit was planned for 90 days but worked for years. It became stuck in soft sand in 2009. Its last contact was on March 22, 2010, and NASA ended the mission in 2011.'},
+{a:RV,n:'OPPORTUNITY ROVER',y:'2004',v:'mars',j:6,d:'JAN 25, 2004',t:'Spirit twin, landed on the opposite side of Mars at Meridiani Planum. It found strong evidence of ancient water.',tm:'NASA Jet Propulsion Laboratory; principal investigator Steve Squyres of Cornell University.',m:'Planned for 90 days, Opportunity kept going for about 14 years and drove over 45 km. A global dust storm silenced it, with last contact on June 10, 2018. NASA declared the mission complete on February 13, 2019.'},
+{a:RV,n:'PERSEVERANCE',y:'2021',v:'mars',j:7,d:'FEB 18, 2021',t:'A car sized rover exploring Jezero Crater, collecting rock samples for a future return to Earth.',tm:'NASA Jet Propulsion Laboratory; the Ingenuity helicopter team was led by MiMi Aung.',m:'Perseverance landed on February 18, 2021. It carried the small helicopter Ingenuity, which made the first powered flight on another planet on April 19, 2021 and ended its mission in January 2024. Unlike the others, Perseverance is not abandoned: it is still working.'}];
+const CAP_M=['SAMPLING MARTIAN SOIL','FROST FALLS ON UTOPIA PLANITIA','AIRBAG LANDING BOUNCES','ROVER ROLLING OFF THE RAMP','MAPPING MARS FROM ORBIT','WHEELS SPINNING IN THE SAND TRAP','ROVING ACROSS MERIDIANI PLANUM','INGENUITY TAKES FLIGHT'];
+CAP.push(...CAP_M);
+PR.forEach((P,i)=>Object.assign(P,EX[i],{v:'moon',j:i}));PR.push(...PRM);PR.forEach(P=>{P.st=['LUNAR RECONNAISSANCE ORBITER','MARS ODYSSEY','PERSEVERANCE'].indexOf(P.n)>-1?1:0});
+let an=null,sel=-1,nr=-1;const openInfo=i=>{blip(600,.08);sel=i;const P=PR[i];$('#it').textContent=P.n+' // '+P.d;$('#ist').textContent='STATUS: '+(P.st?'ACTIVE':'INACTIVE');$('#ist').className=P.st?'act':'ina';$('#itm').textContent='TEAM: '+P.tm;$('#im').style.display='none';$('#im').textContent=P.m;$('#irm').textContent='[ READ MORE ]';$('#ianim').style.display='';$('#ib').textContent=P.t;nar(P.n.toLowerCase()+', '+P.d+'. '+P.t,{hi:true});$('#ianim').textContent='[ ANIMATE ]';$('#info').classList.add('on')};
+const usf=(x,y)=>{blk(x,y,1,22,10);for(let r=0;r<13;r++)blk(x+1,y+r,19,1,r%2?12:7);blk(x+1,y,8,7,30);for(let r=0;r<3;r++)for(let c=0;c<4;c++)blk(x+2+c*2,y+1+r*2,1,1,12)};
+const LEG={n:7,W:13,b:8,R:7,g:10,B:8,s:36,k:24,o:38};
+const LAB=[[1,'TROPOSPHERE 12 km'],[2,'STRATOSPHERE 50 km'],[3,'MESOSPHERE 85 km'],[4,'KARMAN LINE 100 km // SPACE'],[5.4,'LOW EARTH ORBIT']];
+const FACTS={moon:'THE MOON: 384,400 km away. About a 3 day trip. Gravity is 1/6 of Earth, so every step is a leap.',mars:'MARS: about 225 million km away. A day lasts 24h 37m. Home of Olympus Mons, the tallest volcano known.'};
+const DESC={launch:'Beyond Orbit. Scroll down to launch a rocket from Earth into space, then choose the Moon or Mars.',moon:'Landing on the Moon. Scroll to walk across the surface, then confirm your mission.',mars:'Landing on Mars. Scroll to walk across the surface, then confirm your mission.'};
+const SEP=.55,FW=[2,5,6,7,8,11,12];
+const SZ={46:.45,44:.4,58:.5,43:.6,42:.8,45:.5,126:.55,124:.4,95:.6};
+// palette: 1 fg,2 accent,3 dim,4 star,5-7 flame,8 blue,9 ground,10 gray,11 pink,12 white,13 hull,14-17 moon,18-21 mars,22 far star,24 deep ground,25 grass,26 dirt,27 deep dirt,28 sun,29 cloud shade,30 ocean,31 land,32 hill green,33 rim
+const PAL=['#04060c','#9ff0b5','#ffd166','#2f5a7a','#e6f0ff','#ffd166','#ff8a3d','#ff4b3a','#5cb8ff','#9a9aa2','#8d949e','#ff7ad9','#ffffff','#e8edf5','#4a4a4a','#7d7d7d','#b4b4b4','#f2f2f2','#4e1c14','#8a2f21','#c9472f','#ff7a58','#8aa0c4','#4cae6a','#555555','#5cb85c','#7a5232','#5a3a22','#ffe27a','#cfe3ff','#1e5fa8','#3f9a52','#2e7a44','#9ad8ff','#2a1450','#4a1f6e','#9fb0c8','#16304f','#ff7a3d','#17171d','#2e120d'];
+const THEME={launch:['#9ff0b5','#ffd166','#2f5a7a','#9a9aa2'],moon:['#ececec','#ffffff','#3c3c44','#9a9aa2'],mars:['#ffb08a','#ff6b3d','#4a2219','#c2603f']};
+const shade=(hx,f)=>{const n=parseInt(hx.slice(1),16);return'#'+[n>>16&255,n>>8&255,n&255].map(v=>Math.round(f<1?v*f:v+(255-v)*(f-1)).toString(16).padStart(2,'0')).join('')};
+const mix=(a,b,t)=>{const x=parseInt(a.slice(1),16),y=parseInt(b.slice(1),16);return'#'+[16,8,0].map(s=>Math.round((x>>s&255)*(1-t)+(y>>s&255)*t).toString(16).padStart(2,'0')).join('')};
+let HI=PAL.map(c=>shade(c,1.35));
+const h=(a,b)=>{const x=Math.sin(a*127.1+b*311.7)*43758.5453;return x-Math.floor(x)};
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+let cols,rows,cs,oy=0,N,CH,CO,PH,PC,TX=[],SKY=['#000','#000'],pkey='',view='launch',sp=0,lastP=0,parts=[],mx=.5,fwUntil=0,factT0=0,factOn=false,cd=null,ac;
+const ph={moon:0,mars:0},hov={moon:0,mars:0};
+
+function blip(f=600,d=.08){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+const SS=('speechSynthesis' in window&&'SpeechSynthesisUtterance' in window)?window.speechSynthesis:null,said=new Set();
+let NV=false,VOICE=null,busyUntil=0,curU=null;
+const LSP={1:'Troposphere. 12 kilometers.',2:'Stratosphere. 50 kilometers.',3:'Mesosphere. 85 kilometers.',4:'Karman line. 100 kilometers. Space begins here.',5.4:'Low Earth orbit.'},
+MSP=['Max Q. Peak dynamic pressure.','M E C O. Main engine cutoff.','Stage separation confirmed.','Orbit achieved. Welcome to space.'];
+const clean=s=>s.replace(/(\d)\s?km\/h/g,'$1 kilometers per hour').replace(/(\d)\s?km\b/g,'$1 kilometers').replace(/(\d+)M\b/g,'$1 million').replace(/\b1\/6\b/g,'one sixth').replace(/(\d+)h (\d+)m\b/g,'$1 hours $2 minutes').replace(/\bALSEP\b/gi,'A L S E P').replace(/\bTV\b/g,'T V').replace(/\b(JAN|FEB|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,m=>({JAN:'January',FEB:'February',APR:'April',JUN:'June',JUL:'July',AUG:'August',SEP:'September',OCT:'October',NOV:'November',DEC:'December'})[m]);
+function pickVoice(){if(!SS)return;const vs=SS.getVoices().filter(v=>/^en/i.test(v.lang));if(!vs.length)return;const sc=v=>(/natural|neural|online/i.test(v.name)?6:0)+(/google/i.test(v.name)?4:0)+(/aria|jenny|guy|davis|samantha|daniel|alex|ava|zoe|evan|allison|serena/i.test(v.name)?3:0)+(/en[-_]US/i.test(v.lang)?2:0);VOICE=vs.sort((a,b)=>sc(b)-sc(a))[0]}
+function speak(txt,cut){if(!SS)return;try{if(cut)SS.cancel();const u=new SpeechSynthesisUtterance(clean(txt));if(VOICE){u.voice=VOICE;u.lang=VOICE.lang}else u.lang='en-US';u.rate=.97;u.pitch=.92;u.onend=u.onerror=()=>{if(curU===u)busyUntil=0};curU=u;busyUntil=performance.now()+txt.length*85+1200;SS.speak(u)}catch(e){}}
+function nar(txt,o={}){if(!SS)return;const k=o.k;if(k){if(said.has(k))return;if(!NV){said.add(k);return}}if(!NV)return;if(!o.hi&&performance.now()<busyUntil)return;if(k)said.add(k);speak(txt,!!o.hi)}
+function stopV(){try{SS&&SS.cancel()}catch(e){}busyUntil=0;curU=null}
+const introText=()=>view==='launch'?'Beyond Orbit. A NASA hackathon project. Scroll down to launch a rocket from Earth into space, then choose the Moon or Mars.':(view==='moon'?'Landing on the Moon. ':'Landing on Mars. ')+'Descent sequence.';
+function measure(){const dpr=devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cs=Math.round(clamp(innerWidth/72,4,9));ctx.textBaseline='top';oy=parseFloat(getComputedStyle(document.documentElement).paddingTop)||0;cols=Math.floor(innerWidth/cs);rows=Math.floor((innerHeight-oy)/cs);N=cols*rows;CH=new Uint16Array(N);CO=new Uint8Array(N);PH=new Uint16Array(N);PC=new Uint8Array(N);PH.fill(1);pkey=''}
+const put=(x,y,s,c=1)=>{x=Math.round(x);y=Math.round(y);if(y<0||y>=rows)return;for(let i=0;i<s.length;i++){const X=x+i;if(X>=0&&X<cols&&s[i]!==' '){const k=y*cols+X;CH[k]=s.charCodeAt(i);CO[k]=c}}};
+const blk=(x,y,w,hh,c)=>{x=Math.round(x);y=Math.round(y);for(let r=Math.max(0,y);r<Math.min(rows,y+hh);r++)for(let X=Math.max(0,x);X<Math.min(cols,x+w);X++){const k=r*cols+X;CH[k]=35;CO[k]=c}};
+const spr=(x,y,a,m)=>a.forEach((l,r)=>{for(let i=0;i<l.length;i++)if(l[i]!==' ')blk(x+i*K,y+r*K,K,K,m[l[i]])});
+const tit=(y,w,c)=>{const R=big(w),x0=Math.floor((cols-R[0].length*K)/2);R.forEach((l,r)=>{for(let i=0;i<l.length;i++)if(l[i]==='#')blk(x0+i*K,y+r*K,K,K,c)})};
+const disc=(x0,y0,R,fn)=>{for(let y=-R;y<=R;y++)for(let x=-R;x<=R;x++)if(x*x+y*y<=R*R){const c=fn(x,y,Math.sqrt(x*x+y*y));if(c)blk(x0+x,y0+y,1,1,c)}};
+const txt=(x,y,s,c=1,m='l')=>TX.push({x,y,s,c,m});
+function spawn(x,y,n,spd,chs,life,gr=0,col=2){if(parts.length>800)return;for(let i=0;i<n;i++){const a=Math.random()*6.283,s=Math.random()*spd*K;parts.push({x,y,vx:Math.cos(a)*s*2,vy:Math.sin(a)*s,gr:gr*K,l:life*(.5+Math.random()*.5),ch:chs[Math.floor(Math.random()*chs.length)],c:Array.isArray(col)?col[Math.floor(Math.random()*col.length)]:col})}}
+
+function sphere(x0,y0,R,t,kind,hv){for(let y=-R;y<=R;y++)for(let x=-R;x<=R;x++){const nx=x/R,ny=y/R,d=nx*nx+ny*ny;if(d>1)continue;
+const nz=Math.sqrt(1-d),lon=Math.atan2(nx,nz)+t,lat=Math.asin(ny),lit=clamp(-nx*.5-ny*.4+nz*.8),u=Math.floor(lon*5+100),v=Math.floor(lat*7+50),tx=h(u,v);let k;
+if(kind==='moon'){k=tx>.88?.3:.55+tx*.4;if(h(u*2,v*2)>.93)k*=.5}else{k=.5+tx*.5;if(Math.abs(ny)>.82)k=1;else if(Math.sin(lat*3+Math.sin(lon*2))>.6)k*=.6}
+const i=Math.floor(clamp(lit*k*1.3+hv*.12)*9);if(i<1)continue;blk(x0+x+R,y0+y+R,1,1,(kind==='moon'?14:18)+(i<3?0:i<5?1:i<7?2:3))}}
+function stars(off,dir,m){const px=Math.round((mx-.5)*5),o2=Math.floor(off*1.7);for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const k=h(c,r+dir*off),i=r*cols+c;if(k<.011*m){CH[i]=k<.003*m?42:46;CO[i]=k<.003*m?4:22}if(h(c-px+500,r+dir*o2)<.004*m){CH[i]=43;CO[i]=4}}}
+function flame(xc,y,n,t){for(let i=0;i<n;i++){const col=i<1?5:i<3?6:7,w=(i<2?4:i<4?3:2)*K;if(i<2||h(t*30,i)>.3)blk(xc-w/2,y+i*K,w,K,col)}}
+function place(b,x,y,w,hh){b.style.left=x*cs+'px';b.style.top=oy+y*cs+'px';b.style.width=w*cs+'px';b.style.height=hh*cs+'px'}
+function rock(x,base,s,c){for(let r=0;r<s;r++)blk(x+r,base-1-r,2*(s-r),1,c)}
+
+function setView(){const v=(location.hash||'#launch').slice(1);view=['moon','mars'].includes(v)?v:'launch';
+clearInterval(cd);cd=null;parts=[];sp=0;PR.forEach(P=>{if(P.b)P.b.style.display='none'});$('#info').classList.remove('on');an=null;nr=-1;lastP=0;factOn=false;fwUntil=0;stopV();$('#cta').style.opacity=0;$('#nh').style.opacity=0;$('#msg').textContent='';$('#fact').textContent='';
+const T=THEME[view];PAL[1]=T[0];PAL[2]=T[1];PAL[3]=T[2];PAL[9]=T[3];PAL[24]=shade(T[3],.45);PAL[41]='#39ff14';PAL[42]='#ff2a2a';HI=PAL.map(c=>shade(c,1.35));PH&&PH.fill(1);pkey='';
+document.documentElement.classList.toggle('mars',view==='mars');document.documentElement.classList.toggle('moon',view==='moon');spacer.style.height=(view==='launch'?700:900)+'vh';$('#sr').textContent=DESC[view];
+const o=view==='moon'?'mars':'moon';$('#confirm').textContent='[ LAUNCH MISSION TO '+view.toUpperCase()+' ]';$('#other').textContent='[ SWITCH TO '+o.toUpperCase()+' ]';$('#other').dataset.go=o;scrollTo(0,0);said.clear();if(NV)speak(introText(),true)}
+
+const bc=document.createElement('canvas'),bx=bc.getContext('2d');
+function bloom(){const w=Math.max(1,innerWidth>>3),hh=Math.max(1,innerHeight>>3);bc.width=w;bc.height=hh;bx.imageSmoothingQuality='high';bx.drawImage(cv,0,0,w,hh);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='screen';ctx.globalAlpha=.5;ctx.imageSmoothingEnabled=true;ctx.drawImage(bc,0,0,w,hh,0,0,cv.width,cv.height);ctx.restore()}
+function draw(){const key=SKY.join()+TX.map(a=>a.x+'|'+a.y+'|'+a.s+'|'+a.c+'|'+a.m).join('~');let changed=key!==pkey;
+if(!changed)for(let i=0;i<N;i++)if(CH[i]!==PH[i]||CO[i]!==PC[i]){changed=true;break}
+if(!changed)return;pkey=key;PH.set(CH);PC.set(CO);
+const gd=ctx.createLinearGradient(0,0,0,innerHeight);gd.addColorStop(0,SKY[0]);gd.addColorStop(1,SKY[1]);ctx.fillStyle=gd;ctx.fillRect(0,0,innerWidth,innerHeight);
+const g=Math.max(1,Math.round(cs*.2)),cb=cs-g,q=Math.max(1,cb*.38);let lc=-1;
+for(let i=0;i<N;i++){const ch=CH[i];if(ch<33)continue;const c=CO[i],x=(i%cols)*cs,y=oy+Math.floor(i/cols)*cs,sz=SZ[ch];if(c!==lc){ctx.fillStyle=PAL[c];lc=c}
+if(sz){const d=cs*sz;ctx.fillRect(x+(cs-d)/2,y+(cs-d)/2,d,d)}else ctx.fillRect(x+g/2,y+g/2,cb,cb)}
+lc=-1;for(let i=0;i<N;i++){const ch=CH[i];if(ch<33||SZ[ch])continue;const c=CO[i];if(c!==lc){ctx.fillStyle=HI[c];lc=c}ctx.fillRect((i%cols)*cs+g/2,oy+Math.floor(i/cols)*cs+g/2,q,q)}
+bloom();ctx.font=Math.max(11,Math.min(15,cs*1.6+3))+'px ui-monospace,Menlo,Consolas,"Courier New",monospace';ctx.shadowColor='#000';ctx.shadowBlur=4;
+for(const a of TX){const w=ctx.measureText(a.s).width;const X=a.m==='c'?(innerWidth-w)/2:a.m==='r'?innerWidth-w-cs*2:a.m==='e'?a.x*cs-w:a.x*cs;if(/^\[|km$/.test(a.s)){ctx.shadowBlur=0;ctx.fillStyle='rgba(4,6,12,.8)';ctx.fillRect(X-6,oy+a.y*cs-3,w+12,cs*1.8+6);ctx.shadowBlur=4}ctx.fillStyle=PAL[a.c];ctx.fillText(a.s,X,oy+a.y*cs)}ctx.shadowBlur=0}
+
+function frame(now){
+const t=now/1000,dt=Math.min(.05,t-(frame.t||t));frame.t=t;
+const max=Math.max(1,spacer.offsetHeight-innerHeight),tg=clamp(scrollY/max);sp+=(tg-sp)*Math.min(1,dt*9);const p=sp;
+const sh=view==='launch'&&((p>.05&&p<.14)||(p>.2&&p<.27)||(p>SEP&&p<SEP+.03))&&!matchMedia('(prefers-reduced-motion:reduce)').matches?(p>.2?2:3):0;
+cv.style.transform=sh?`translate(${(Math.random()-.5)*sh*2}px,${(Math.random()-.5)*sh*2}px)`:'';
+CH.fill(32);CO.fill(1);TX=[];const cx=Math.floor(cols/2);
+if(view==='launch'){
+const tt=clamp((p-.12)/.7),e=tt*tt,off=Math.floor(e*rows*6+p*rows),a=clamp(e*2.2);
+SKY=[mix('#2a78e0','#000000',Math.pow(a,.8)),mix('#bfe6ff','#02030a',Math.pow(a,.7))];
+const ryAt=q=>{const z=clamp((q-.12)/.7),b=rows-3*K-RH;return Math.floor(b+(Math.floor(rows*.14)-b)*z*z)};
+const gy=(rows-3*K)+Math.floor(e*rows*1.6),ry=ryAt(p);
+stars(off,-1,clamp((a-.25)*1.6));
+if(a<.8){disc(Math.floor(cols*.8),Math.floor(rows*.13+a*rows*.25),7,(x,y,d)=>d>6?33:28)}
+if(a<.6)for(let i=0;i<7;i++){const x=Math.floor((h(i,1)*cols*1.4+t*(2+i%3)*K)%(cols+30))-15,y=Math.floor(rows*(.1+h(i,2)*.4)+off*.45);if(y<rows&&y>-8&&!(y>9-Math.floor(p*rows*1.4)-6&&y<9-Math.floor(p*rows*1.4)+25)){blk(x+4,y,10,2,12);blk(x,y+2,18,2,12);blk(x+3,y+4,13,2,29)}}
+const ev=clamp((e-.5)*2.2);if(ev>0){const Rr=Math.floor(cols*1.1),ey=Math.floor(rows*(1-.2*ev)+Rr),top=Math.max(0,ey-Rr);for(let r=top;r<rows;r++)for(let c=0;c<cols;c++){const dx=c-cx,dy=r-ey,d=Math.sqrt(dx*dx+dy*dy);if(d<Rr){const ed=Rr-d,j=Math.floor((c+off)/5),l=Math.floor(r/5);blk(c,r,1,1,ed<2?33:ed<4?8:h(j,l)>.62?31:h(j*3,l*3)>.9?12:30)}}}
+if(p>.3&&p<.9){const x=Math.floor((t*22*K)%(cols+60))-30,y=Math.floor(x/3)+4;blk(x,y,2,2,12);for(let i=1;i<10;i++)blk(x-i*3,y-Math.floor(i*.7),2,1,i<5?4:22)}
+if(p>.65)spr(Math.floor((t*7*K)%(cols+30))-15,Math.floor(rows*.42),ISS,{B:8,W:13});
+LAB.forEach(([k,s])=>{const r=off-Math.floor(k*rows*.9);if(r>6&&r<rows-4){for(let c=0;c<cols;c+=3){CH[r*cols+c]=45;CO[r*cols+c]=3}txt(0,r-3,s,2,'r');nar(LSP[k],{k:'lab'+k})}});
+const sl=Math.floor(e*cols/4),f=Math.floor(tt*40);for(let i=0;i<sl;i++){const c=Math.floor(h(i,f)*cols),r=Math.floor(h(f,i)*rows);if(Math.abs(c-cx)>8&&CH[r*cols+c]===32){CH[r*cols+c]=124;CO[r*cols+c]=22}}
+if(gy<rows){const hl=gy-1;for(let c=0;c<cols;c++){const hg=Math.floor((5+3*Math.sin(c*.05)+2*Math.sin(c*.13))*K);for(let j=0;j<hg;j++)if(hl-j>=0)blk(c,hl-j,1,1,j>hg-2?25:32)}
+for(let c=0;c<cols;c++){blk(c,gy,1,K,h(c,3)>.5?25:5*0+25);if(h(c,17)>.82)blk(c,gy-1,1,1,25);for(let r=gy+K;r<rows;r++)blk(c,r,1,1,h(c,r)>.7?27:26)}
+blk(cx-14,gy-20,3,20,10);blk(cx-14,gy-19,8,2,10);blk(cx-12,gy,24,2,10);if(p>.05&&p<.3)spawn(cx,gy-1,3,7,['#','.','~'],1,0,[10,12])}
+const dx=((p>.05&&p<.12)||(e>.15&&p<.8))&&Math.random()<.5?(Math.random()<.5?-1:1):0;
+if(p>=SEP){const q=p-SEP,by=ry+7*K+Math.floor(q*rows*18),bx=cx-5-Math.floor(q*rows*6);spr(bx,by,BOOST,LEG);if(lastP<SEP){spawn(cx,ry+7*K,40,14,['*','+','#'],1,0,[5,6,12]);blip(200,.3)}}
+const RK=ROCKET;spr(cx-7+dx,ry,RK,LEG);
+if(p>.05)flame(cx+dx,ry+RK.length*K,Math.floor(1+clamp((p-.05)/.07)*2+e*5),t);
+if(p>.05&&lastP<=.05)blip(70,.6);if(p>.25&&p<.8)for(let i=0;i<2;i++){const sx=Math.random()*cols;for(let j=0;j<3;j++)parts.push({x:sx,y:-1-j,vx:0,vy:55*K,gr:0,l:.5,ch:'|',c:4})}
+if(p>.05&&p<.8&&Math.random()<.7)spawn(cx+dx,ry+RK.length*K+2,2,5,['.','o','~'],1.1,2,[10,5,6,12]);
+const MS=[[.2,.27,'>> MAX-Q: PEAK DYNAMIC PRESSURE'],[.5,.58,'>> MECO: MAIN ENGINE CUTOFF'],[SEP,SEP+.07,'>> STAGE SEPARATION CONFIRMED'],[.8,.88,'>> ORBIT ACHIEVED. WELCOME TO SPACE.']];
+MS.forEach(([a0,b0,ms],i)=>{if(p>a0&&p<b0){txt(0,Math.floor(rows*.3),ms,2,'c');nar(MSP[i],{k:'ms'+i,hi:true})}});
+if(p>.01&&p<.12){const n=Math.ceil(10*(1-p/.12));nar(n===10?'T-minus ten.':n===1?'One. All systems go.':String(n),{k:'cd'+n,hi:true});txt(0,rows*.5,'T-MINUS '+String(n).padStart(2,'0')+(p>.1?'  ALL SYSTEMS GO':''),2,'c');if(Math.floor(p*400)%4===0&&Math.random()<.05)blip(300,.05)}
+const ty=9-Math.floor(p*rows*1.4);{const W=big('BEYOND')[0].length*K+10,H=33,X=Math.floor((cols-W)/2),Y=ty-3;blk(X,Y,W,H,37);blk(X,Y,W,1,2);blk(X,Y+H-1,W,1,2);blk(X,Y,1,H,2);blk(X+W-1,Y,1,H,2);blk(X+2,Y+2,W-4,1,3);blk(X+2,Y+H-3,W-4,1,3)}
+tit(ty,'BEYOND',12);tit(ty+6*K,'ORBIT',2);{const nh=$('#nh');nh.style.top=(oy+(ty+24.5)*cs)+'px';nh.style.opacity=ty+30>0?1:0}
+$('#cta').style.opacity=p<.04?1:0;
+txt(1,4.5,p<.01?'STANDBY':'ALT '+String(Math.round(e*400)).padStart(3,'0')+' km  VEL '+Math.round(e*7800)+' m/s  '+(p<.12?'IGNITION':p<SEP?'ASCENT':p<.82?'STAGE 2':'ORBIT'),a<.5?13:1);
+const o=clamp((p-.78)/.15);pick.classList.toggle('on',o>.6);if(o>.6)nar('Choose your destination. The Moon, 384,400 kilometers. Or Mars, 225 million kilometers.',{k:'pick'});pick.style.opacity=o>.05?1:0;fin.style.opacity=0;fin.classList.remove('on');
+if(o>.05){const R2=cols<100?14:18,pw=R2*2+1,gap=Math.max(6,Math.floor(cols/12)),x1=Math.floor((cols-pw*2-gap)/2),x2=x1+pw+gap,py=rows-R2*2-14;
+ph.moon+=dt*(.4+hov.moon*2.2);ph.mars+=dt*(.4+hov.mars*2.2);
+if(Math.floor(t*2)%2)txt(0,py-6,'>> CHOOSE YOUR DESTINATION <<',2,'c');
+sphere(x1,py,R2,ph.moon,'moon',hov.moon);sphere(x2,py,R2,ph.mars,'mars',hov.mars);
+const sd=x1>=16,my=py+R2-1;
+if(sd){txt(x1-3,my,'[ THE MOON ]',hov.moon?2:1,'e');txt(x1-3,my+3,'384,400 km',10,'e');txt(x2+pw+3,my,'[ MARS ]',hov.mars?2:1);txt(x2+pw+3,my+3,'225M km',10)}
+else{txt(x1,py-4,'[ THE MOON ]',hov.moon?2:1);txt(x1,py-2,'384,400 km',10);txt(x2,py-4,'[ MARS ]',hov.mars?2:1);txt(x2,py-2,'225M km',10)}
+place($('#bm'),x1,py,pw,R2*2+8);place($('#bj'),x2,py,pw,R2*2+8)}
+}else{
+const L=.2,tt=clamp(p/L),e=1-(1-tt)**2,sy=rows-10,mars=view==='mars',ry=Math.floor(-RH+e*sy),w=clamp((p-L)/(.9-L)),D=Math.floor(w*cols*9),ax=Math.floor(cols*.45);
+SKY=mars?['#1c0d0a','#9a5a40']:['#000000','#05060b'];
+stars(Math.floor(p*rows*2),1,mars?.35:1);
+if(!mars)disc(cols-18,18,8,(x,y,d)=>h(x,y)>.6?31:30);else disc(cols-24-Math.floor(p*14),12,3,(x,y,d)=>d>2?9:10);
+for(let c=0;c<cols;c++){const wc=c+Math.floor(D*.12),hg=Math.floor((22+7*Math.sin(wc*.04)+3*Math.sin(wc*.11+1))*K*.6);for(let j=0;j<=hg;j++){const r=sy-1-j;if(r>=0)blk(c,r,1,1,mars?40:39)}}
+for(let c=0;c<cols;c++){const wc=c+Math.floor(D*.3),hg=Math.floor(((mars?15:13)+(mars?4:3)*Math.sin(wc*.07)+(mars?2:1.5)*Math.sin(wc*.19))*K);for(let j=0;j<=hg;j++){const r=sy-1-j;if(r>=0)blk(c,r,1,1,3)}}
+for(let r=sy;r<rows;r++)for(let c=0;c<cols;c++){const k=h((c+D)*.7,r);if(r<sy+2)blk(c,r,1,1,k>.85?10:9);else{blk(c,r,1,1,24);if(k>.93)blk(c,r,1,1,9)}}
+
+for(let i=Math.floor(D/24)-1;i<=Math.floor((D+cols)/24)+1;i++){const x=i*24+Math.floor(h(i,6)*14)-D,k=h(i,5),y=h(i,7);if(k>.35){if(y<.4){blk(x,sy+4,10,1,10);blk(x+1,sy+5,8,1,3)}else if(y<.8)rock(x,sy,3,9);else rock(x,sy,6,mars?20:10)}}
+
+if(an&&t-an.t>4)an=null;let nn=-1,tl=-1;
+{PR.forEach((P,i)=>{if(P.v!==view){P.b.style.display='none';return}const a=P.a,hv=P.hv||0,x=ax+Math.floor(cols*9*(P.j+1)/(mars?9:6))-D,w=a[0].length*K,y0=sy-a.length*K-hv-(hv?Math.round(Math.sin(t*1.5)):0),on=x>-w-40&&x<cols+10,A=an&&an.i===i?t-an.t:-1;if(x+w/2<ax+4)tl=Math.max(tl,P.j);
+P.b.style.display=on?'block':'none';if(!on)return;if(Math.abs(x+w/2-(ax+4))<20)nn=i;
+let dx=0,dy=0;if(A>=0){if(i===7){dy=Math.round(Math.abs(Math.sin(A*3.2))*14*Math.max(0,1-A/3.6));if(dy===0&&Math.random()<.4)spawn(x+w/2,sy-1,1,4,['.',',','o'],.6,0,9)}if(i===8){dx=Math.round(Math.min(A/3,1)*30);if(dx>0&&dx<30)spawn(x+dx,sy-1,1,3,['.',','],.5,0,9)}if(i===10){dx=Math.round(3*Math.sin(Math.PI*A/4));if(Math.random()<.7)spawn(x+2,sy-1,1,5,['.',',','o'],.8,0,9)}}if((i===3||i===11)&&A>=0){dx=Math.round(40*Math.sin(Math.PI*A/4));if(dx>0&&dx<40)spawn(x+dx,sy-1,1,4,['.',',','o'],.6,0,9)}
+spr(x+dx,y0-dy-((i===3||i===11)&&A>=0&&dx%2?1:0),a,PM);
+txt(x,y0-9.5,'[ '+P.n+' ]',1);txt(x,y0-7,P.d,2);txt(x,y0-4.5,'STATUS: '+(P.st?'ACTIVE':'INACTIVE'),P.st?41:42);txt(x,y0-2,'tap to inspect',10);place(P.b,x,y0,w,a.length*K);
+if(A<0)return;
+if(i===0||i===5){const L=Math.floor(24*Math.sin(Math.PI*A/4)),y1=sy-6;for(let j=0;j<=L;j++)blk(x+11+j,y1+Math.floor((sy-3-y1)*j/24),1,2,10);if(L>3){blk(x+11+L-1,sy-3,4,2,12);if(A>1.2&&A<2.8)spawn(x+11+L,sy-2,1,4,['.',',','o'],.6,0,9)}}
+if(i===1){const up=A>1?Math.floor((A-1)*(A-1)*9):0,ay=y0-4*K-up,x2=x+4+(A>1?Math.floor((A-1)*(A-1)*5):0);spr(x2,ay,ASC,PM);if(A>1){flame(x2+7,ay+4*K,3,t);if(A<2.6)spawn(x+11,sy-1,2,6,['.',',','o','#'],.8,0,9)}}
+if(i===2)for(let k=0;k<3;k++){const r=(A*12+k*8)%24;for(let g=-170;g<=-10;g+=10)blk(x+11+Math.round(r*Math.cos(g*Math.PI/180)),y0+Math.round(r*Math.sin(g*Math.PI/180)),1,1,r<12?2:10)}
+if(i===4||i===9){const b2=x+13+Math.round(18*Math.sin(A*2.4)),y1=y0+10,n=sy-1-y1;for(let j=0;j<=n;j+=2)blk(x+13+Math.round((b2-x-13)*j/n),y1+j,1,1,2);blk(b2-3,sy-1,7,1,2)}if(i===6&&Math.random()<.7)spawn(x+Math.random()*w,y0-6,1,2,['.','*'],1.4,4,12);if(i===12){const hy=y0-6-Math.round(16*Math.sin(Math.PI*A/4)),hx=x+w+6;blk(hx-1,hy+1,3,2,13);blk(hx-6+(Math.floor(A*14)%2)*2,hy,12,1,12);blk(hx-1,hy+3,1,2,10);blk(hx+1,hy+3,1,2,10)}
+});nr=tt>=1?nn:-1;if(nr>=0)nar(PR[nr].n.toLowerCase()+'. '+PR[nr].d+'. Status: '+(PR[nr].st?'active':'inactive')+'. Tap to inspect.',{k:'near'+nr});if(an)txt(0,Math.floor(rows*.12),'[ '+CAP[an.i]+' ]',2,'c');if(nr>=0){txt(0,rows-9,'[ PRESS ENTER TO INTERACT ]',2,'c');txt(0,rows-6,'[ PRESS E TO ANIMATE ]',2,'c')}}
+const bx=ax+cols*9+16-D;if(!mars)usf(bx,sy-22);else{txt(bx+20,sy-12,'[ NO HUMAN HAS SET FOOT HERE YET... ]',2,'e');if(bx+20>10&&bx+20<cols-4)nar('No human has set foot here yet.',{k:'nohuman'})}
+spr(cx-7-D,ry,ROCKET,LEG);
+if(tt<1){flame(cx,ry+RH,Math.max(1,Math.round((1-tt)*4)),t);if(tt>.85)spawn(cx,sy,2,8,['.',',','#'],.9,0,9)}
+else{if(!mars){blk(cx-14-D,sy-16,2,16,10);blk(cx-12-D,sy-16,8,5,7)}if(lastP<L){spawn(cx,sy,50,10,['.',',','#','o'],1.4,0,9);blip(150,.4)}nar('Touchdown confirmed. Scroll to walk across the surface.',{k:'td'});}
+if(tt>=1){const fr=Math.floor(D/3)%2;for(let k=0;6*k<=D;k++){const x=ax+6*k-D;if(x>=-2)blk(x,sy,2,1,10)}
+if(Math.abs(tg-sp)>.0006&&Math.random()<.4)spawn(ax+2,sy,1,3,['.',','],.6,0,9);if(w<.08&&Math.floor(t*2)%2)txt(0,rows*.4,'SCROLL TO WALK >>>',2,'c');
+const mv=Math.abs(tg-sp)>.0006,fi=mv?Math.floor(D/4)%4:0,hop=mv?Math.round(Math.abs(Math.sin(D*.12))*(mars?1:3)):0;
+const LG=[[" wwwww ","ww   ww","gg   gg"],["  www  ","  w ww ","  g gg "],[" wwwww ","ww  ww ","gg  gg "],["  www  "," ww w  "," gg g  "]][fi];
+const AS=["  www  "," wvvvw "," wvcvw ","  www  ","ggwwwo ","ggwwsw "].concat(LG),AM={w:13,s:36,v:37,c:8,o:38,g:10};
+blk(ax,sy,8,1,24);AS.forEach((l,r)=>{for(let i=0;i<l.length;i++)if(l[i]!==' ')blk(ax+i,sy-AS.length-hop+r,1,1,AM[l[i]])});
+if(mv&&hop===0&&fi%2===0&&Math.random()<.5)spawn(ax+3,sy-1,3,5,['.',',','o'],.7,0,9)}
+if(mars&&Math.random()<.5)parts.push({x:-1,y:sy-1-Math.random()*10,vx:(30+Math.random()*20)*K,vy:0,gr:0,l:2,ch:':',c:9});
+const ty=9-Math.floor(p/L*rows*.9);tit(ty,view.toUpperCase(),2);txt(0,ty+6*K,'~ DESCENT SEQUENCE ~',1,'c');
+txt(1,4.5,tt<1?'ALT '+String(Math.round((1-e)*100)).padStart(3,'0')+' km  VEL '+Math.round((1-e)*1800)+' m/s':'TOUCHDOWN: OK  TIMELINE '+(tl>=0?PR.filter(P=>P.v===view)[tl].d:'START'));
+pick.style.opacity=0;pick.classList.remove('on');const o=clamp((p-.9)/.07);fin.style.opacity=o;fin.classList.toggle('on',o>.6);
+if(o>.3&&!factOn){factOn=true;factT0=t;nar('Your choice. '+FACTS[view],{hi:true})}if(o<.1)factOn=false;if(factOn)$('#fact').textContent=FACTS[view].slice(0,Math.floor((t-factT0)*45));
+}
+if(t<fwUntil&&Math.random()<.12)spawn(10+Math.random()*(cols-20),8+Math.random()*rows*.5,36,14,['*','+','#'],1.2,6,FW);
+parts=parts.filter(q=>{q.l-=dt;if(q.l<=0)return false;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=q.gr*dt;put(q.x,q.y,q.l<.25?'.':q.ch,q.c);return true});
+txt(1,.8,'BEYOND ORBIT // MISSION CONTROL',view==='launch'&&SKY[0]!=='#000000'&&tg<.55?13:1);txt(0,.8,'T+'+String(Math.round(p*(view==='launch'?240:90))).padStart(3,'0')+'s',2,'r');
+const bw=cols-6,fl=Math.round(p*bw);for(let i=0;i<bw;i++)put(3+i,rows-3,i<fl?'#':'-',i<fl?2:3);
+lastP=p;draw();requestAnimationFrame(frame)}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;blip(700,.1);location.hash=b.dataset.go});
+$('#bm').onmouseenter=()=>{hov.moon=1;nar('The Moon. 384,400 kilometers.',{hi:true})};$('#bm').onmouseleave=()=>hov.moon=0;$('#bj').onmouseenter=()=>{hov.mars=1;nar('Mars. 225 million kilometers.',{hi:true})};$('#bj').onmouseleave=()=>hov.mars=0;
+$('#bm').onfocus=()=>nar('The Moon. 384,400 kilometers.',{hi:true});$('#bj').onfocus=()=>nar('Mars. 225 million kilometers.',{hi:true});
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth;spawn(e.clientX/cs,(e.clientY-oy)/cs,1,3,['+','*','.'],.5,0,2)});
+addEventListener('pointerdown',e=>{spawn(e.clientX/cs,(e.clientY-oy)/cs,18,12,['*','+','#'],.8,0,[2,5,12])});
+$('#confirm').onclick=()=>{if(cd)return;blip(440,.15);let n=10;const m=$('#msg'),v=view.toUpperCase();m.textContent='MISSION LOCKED: '+v+'. T-MINUS 10';nar('Mission locked.',{hi:true});
+cd=setInterval(()=>{n--;if(n>0){m.textContent='T-MINUS '+n+'...';nar(String(n),{hi:true});blip(300+(10-n)*40)}else{clearInterval(cd);cd=null;fwUntil=performance.now()/1000+6;const cl=100+Math.floor(Math.random()*900);m.textContent='LIFTOFF! WELCOME TO '+v+', EXPLORER. CALLSIGN: BO-'+cl;nar('Liftoff! Welcome to '+(view==='moon'?'the Moon':'Mars')+', explorer. Callsign B O '+String(cl).split('').join(' ')+'.',{hi:true});blip(880,.5)}},700)};
+PR.forEach((P,i)=>{const b=document.createElement('button');b.className='hit';b.setAttribute('aria-label',P.n);b.style.display='none';b.onclick=()=>openInfo(i);document.body.appendChild(b);P.b=b});
+$('#ianim').onclick=()=>{blip(500,.1);an={i:sel,t:performance.now()/1000};nar(CAP[sel].toLowerCase()+'.',{hi:true})};$('#irm').onclick=()=>{const m=$('#im'),o=m.style.display==='none';m.style.display=o?'block':'none';$('#irm').textContent=o?'[ READ LESS ]':'[ READ MORE ]';blip(550,.08);if(o)nar('Team. '+PR[sel].tm+' '+PR[sel].m,{hi:true});else stopV()};$('#iclose').onclick=()=>{$('#info').classList.remove('on');an=null;stopV()};
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key,inf=$('#info');if(k==='Escape'){inf.classList.remove('on');an=null;stopV();return}if(nr<0)return;if(k==='Enter'&&!e.target.closest('button')){e.preventDefault();if(inf.classList.contains('on')&&sel===nr)inf.classList.remove('on');else openInfo(nr)}if(k==='e'||k==='E'){blip(500,.1);an={i:nr,t:performance.now()/1000};nar(CAP[nr].toLowerCase()+'.',{hi:true})}});
+$('#nt').onclick=()=>{NV=!NV;const b=$('#nt');b.textContent=NV?'[ VOICE: ON ]':'[ VOICE: OFF ]';b.classList.toggle('off',!NV);b.setAttribute('aria-pressed',NV);blip(NV?800:400,.08);if(NV){pickVoice();speak(sp<.03?introText():'Narration enabled.',true)}else stopV()};
+if(SS){SS.onvoiceschanged=pickVoice;pickVoice()}else $('#nt').style.display='none';
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopV()});
+addEventListener('resize',measure);addEventListener('hashchange',setView);
+measure();setView();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
