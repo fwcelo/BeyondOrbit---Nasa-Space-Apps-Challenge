@@ -1,9 +1,4 @@
-Claro\! Aqui está a versão profissional, totalmente em inglês, sem emojis e com uma identidade mais acadêmica e tecnológica.
-
-Escrita
-
 # BEYOND ORBIT
-
 ### Abandoned but Not Forgotten: The Untold Stories of NASA's Discarded Equipment on the Moon and Mars
 
 **NASA Space Apps Challenge**
